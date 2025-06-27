@@ -81,7 +81,7 @@ const cards = [
         id: 6,
         title: "Kecap 500 ml",
         point: 2, // PASTIKAN INI ADALAH NUMBER
-        url: "https://images.tokopedia.net/img/cache/500-square/VqbcmM/2022/3/8/dfbe4fab-11be-46fd-8422-de3151e35f85.jpg",
+        url: "https://images.tokopedia.net/img/cache/500-square/VqbcmM/2022/3/8/dfbe5fab-11be-46fd-8422-de3151e35f85.jpg",
     },
     {
         id: 7,
@@ -110,7 +110,7 @@ type CardItem = {
     url: string;
 };
 
-export default function Insentif({ auth, totalPoints: initialTotalPoints }: any) {
+export default function Insentif({ auth, totalPoints: initialTotalPoints }: PageProps & { totalPoints: number }) { // Perbaikan: Tipe `totalPoints`
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<CardItem | null>(null);
     const [currentTotalPoints, setCurrentTotalPoints] = useState(initialTotalPoints);
@@ -126,6 +126,7 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: any)
     const handleCloseDialog = () => {
         setIsDialogOpen(false);
         setSelectedItem(null);
+        setErrorMessage(""); // Reset error message saat menutup dialog
     };
 
     const handleRedeem = () => {
@@ -134,37 +135,35 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: any)
             return;
         }
 
-        // Pastikan konversi ke number jika ada keraguan, meskipun sudah di set di atas
-        const itemCost = Number(selectedItem.point);
+        const itemCost = Number(selectedItem.point); // Pastikan konversi ke number
 
-        // Cek apakah poin pengguna cukup
         if (currentTotalPoints < itemCost) {
-            alert("Poin Anda tidak cukup untuk menukar item ini!");
+            setErrorMessage("Poin Anda tidak cukup untuk menukar item ini!"); // Tampilkan di dialog
             return;
         }
 
         post(route('redeem.item'), {
             item_id: selectedItem.id,
-            points_cost: Number(itemCost),
+            points_cost: itemCost, // Sudah pasti number karena dikonversi di atas
         }, {
             onSuccess: () => {
-                setCurrentTotalPoints((prevPoints: number) => prevPoints - Number(itemCost));
-                setErrorMessage("");
+                setCurrentTotalPoints((prevPoints) => prevPoints - itemCost); // 'prevPoints' dan 'itemCost' sudah pasti number
+                setErrorMessage(""); // Reset error message on success
                 alert(`Berhasil menukar ${selectedItem.title}! Poin Anda berkurang sebanyak ${itemCost}.`);
                 handleCloseDialog();
             },
-            onError: (err: any) => {
+            onError: (err: { message?: string; errors?: Record<string, string[]> }) => { // Perbaikan: Tipe 'err' (TS7006)
                 console.error("Error saat menukar:", err);
-                let errorMessage = "Gagal menukar item. Silakan coba lagi.";
+                let errorMsg = "Gagal menukar item. Silakan coba lagi.";
                 if (err.message) {
-                    errorMessage = err.message;
+                    errorMsg = err.message;
                 } else if (err.errors) {
                     const validationErrors = Object.values(err.errors).flat();
                     if (validationErrors.length > 0) {
-                        errorMessage = validationErrors.join("\n");
+                        errorMsg = validationErrors.join("\n");
                     }
                 }
-                setErrorMessage(errorMessage);
+                setErrorMessage(errorMsg); // Tampilkan error di dialog, jangan tutup dialog
             },
             preserveScroll: true,
         });
@@ -206,9 +205,7 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: any)
                                     <Button
                                         className="w-full"
                                         onClick={() => handleOpenDialog(item)}
-                                        // Ini adalah bagian kunci: Pastikan item.point adalah angka
-                                        // currentTotalPoints dan item.point harus angka untuk perbandingan
-                                        disabled={currentTotalPoints < item.point || processing}
+                                        disabled={currentTotalPoints < item.point || processing} // Perbaikan: Pastikan perbandingan number
                                     >
                                         Tukar
                                     </Button>

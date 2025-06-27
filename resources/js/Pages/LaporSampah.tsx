@@ -54,7 +54,7 @@ import {
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 
-export default function LaporSampah({ auth, database }: PageProps & { database: any[] }) {
+export default function LaporSampah({ auth, database }: PageProps & { database: any[] }) { // Tipe 'database' bisa lebih spesifik jika Anda tahu strukturnya
     const { data, setData, post, processing, errors, reset } = useForm({
         jenis_sampah: "",
         berat_sampah: 0,
@@ -62,6 +62,7 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
         point: 0,
         latitude: 0,
         longitude: 0,
+        foto_sampah: null as File | null, // Tambahkan tipe File | null untuk foto_sampah
     });
 
     const [location, setLocation] = useState({ latitude: 0, longitude: 0 });
@@ -78,33 +79,46 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                     });
                     setData((prevData) => ({
                         ...prevData,
-                        latitude: position.coords.latitude, // Default menjadi 0 jika tidak valid
-                        longitude: position.coords.longitude, // Default menjadi 0 jika tidak valid
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
                     }));
                 },
-                (error) => {
-                    console.error(error);
+                (error: GeolocationPositionError) => { // Perbaikan: Tipe 'error' untuk Geolocation
+                    console.error("Error mendapatkan lokasi:", error); // Pesan lebih deskriptif
+                    setErrorMessage("Gagal mendapatkan lokasi Anda. Pastikan izin lokasi diberikan."); // Tampilkan error di UI
+                    // Opsional: set default latitude/longitude ke 0 atau nilai lain yang menandakan error
+                    setData((prevData) => ({
+                        ...prevData,
+                        latitude: 0,
+                        longitude: 0,
+                    }));
                 }
             );
         } else {
             alert("Geolocation is not supported by this browser.");
+            setErrorMessage("Browser Anda tidak mendukung Geolocation."); // Tampilkan error di UI
         }
     }, []);
 
-    const handleBeratSampahChange = (e: any) => {
-        const berat = e.target.value;
+    const handleBeratSampahChange = (e: React.ChangeEvent<HTMLInputElement>) => { // Perbaikan: Tipe event
+        const berat = parseInt(e.target.value); // Pastikan ini dikonversi ke number
         setData((prevData) => ({
             ...prevData,
-            berat_sampah: parseInt(berat),
-            total_harga: berat * 5000,
-            point: parseInt(berat),
+            berat_sampah: isNaN(berat) ? 0 : berat, // Handle NaN jika input kosong/tidak valid
+            total_harga: (isNaN(berat) ? 0 : berat) * 5000,
+            point: isNaN(berat) ? 0 : berat,
         }));
     };
 
-    const submitLocation = (e: any) => {
+    const submitLocation = (e: React.FormEvent) => { // Perbaikan: Tipe event
         e.preventDefault();
         const formData = new FormData();
         Object.keys(data).forEach((key) => {
+            // Pastikan Anda menangani kasus 'null' untuk foto_sampah jika tidak diisi
+            if (key === 'foto_sampah' && data.foto_sampah === null) {
+                // Jangan append jika null, atau berikan penanganan error jika required
+                return;
+            }
             formData.append(key, (data as any)[key]);
         });
 
@@ -116,7 +130,7 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                 setIsDialogOpen(false);
                 setErrorMessage(""); // Reset error message on success
             },
-            onError: (err: { message?: string; errors?: Record<string, string[]> }) => {
+            onError: (err: { message?: string; errors?: Record<string, string[]> }) => { // Perbaikan: Tipe 'err'
                 let errorMsg = "Gagal melaporkan sampah. Silakan coba lagi.";
                 if (err.message) {
                     errorMsg = err.message;
@@ -151,18 +165,6 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                                     <TabsTrigger value="semua">
                                         Semua
                                     </TabsTrigger>
-                                    {/* <TabsTrigger value="menunggu">
-                                        Menunggu
-                                    </TabsTrigger>
-                                    <TabsTrigger value="diterima">
-                                        Diterima
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="ditolak"
-                                        className="hidden sm:flex"
-                                    >
-                                        Ditolak
-                                    </TabsTrigger> */}
                                 </TabsList>
                                 <div className="ml-auto flex items-center gap-2">
                                     <Dialog
@@ -208,11 +210,18 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                                                         type="file"
                                                         onChange={(e) => {
                                                             const files = e.target.files;
-                                                            if (files && files.length > 0) {
+                                                            if (files && files.length > 0) { // Perbaikan: TS18047
                                                                 setData(
                                                                     (prevData) => ({
                                                                         ...prevData,
                                                                         foto_sampah: files[0],
+                                                                    })
+                                                                );
+                                                            } else {
+                                                                setData(
+                                                                    (prevData) => ({
+                                                                        ...prevData,
+                                                                        foto_sampah: null, // Reset jika tidak ada file
                                                                     })
                                                                 );
                                                             }
@@ -222,7 +231,7 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                                                 </div>
                                                 <div className="grid grid-cols-8 items-center gap-2">
                                                     <Label
-                                                        htmlFor="foto"
+                                                        htmlFor="jenisSampah" // Ganti htmlFor dari "foto" ke "jenisSampah"
                                                         className="text-left"
                                                     >
                                                         Jenis Sampah:
@@ -264,9 +273,7 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                                                     </Label>
                                                     <Input
                                                         id="beratSampah"
-                                                        defaultValue={
-                                                            data?.berat_sampah
-                                                        }
+                                                        value={data.berat_sampah === 0 ? '' : data.berat_sampah} // Perbaikan: Tampilkan kosong jika 0
                                                         onChange={
                                                             handleBeratSampahChange
                                                         }
@@ -377,9 +384,6 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                                                     <TableHead>
                                                         Jenis Sampah
                                                     </TableHead>
-                                                    {/* <TableHead>
-                                                        Status
-                                                    </TableHead> */}
                                                     <TableHead className="hidden md:table-cell">
                                                         Berat Sampah
                                                     </TableHead>
@@ -398,8 +402,8 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {(database as any[]).map(
-                                                    (item: any, index: any) => (
+                                                {(database as any[]).map( // Perbaikan: TS18046
+                                                    (item: any, index: number) => ( // Perbaikan: Tipe 'index'
                                                         <TableRow key={item.id}>
                                                             <TableCell className="hidden md:table-cell">
                                                                 {index + 1}.
@@ -416,7 +420,7 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                                                                         item.foto_sampah ||
                                                                         "/placeholder.svg"
                                                                     }
-                                                                    width="64"
+                                                                                                        width="64"
                                                                 />
                                                             </TableCell>
                                                             <TableCell className="font-medium">
@@ -455,12 +459,6 @@ export default function LaporSampah({ auth, database }: PageProps & { database: 
                                             </TableBody>
                                         </Table>
                                     </CardContent>
-                                    {/* <CardFooter>
-                                        <div className="text-xs text-muted-foreground">
-                                            Showing <strong>1-10</strong> of{" "}
-                                            <strong>32</strong> products
-                                        </div>
-                                    </CardFooter> */}
                                 </Card>
                             </TabsContent>
                         </Tabs>
