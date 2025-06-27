@@ -114,6 +114,7 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: any)
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<CardItem | null>(null);
     const [currentTotalPoints, setCurrentTotalPoints] = useState(initialTotalPoints);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const { post, processing, errors } = useForm({});
 
@@ -144,17 +145,26 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: any)
 
         post(route('redeem.item'), {
             item_id: selectedItem.id,
-            points_cost: itemCost, // Pastikan ini number
+            points_cost: Number(itemCost),
         }, {
             onSuccess: () => {
-                setCurrentTotalPoints((prevPoints: number) => prevPoints - itemCost);
-                alert(`Berhasil menukar ${selectedItem.title}!`);
+                setCurrentTotalPoints((prevPoints: number) => prevPoints - Number(itemCost));
+                setErrorMessage("");
+                alert(`Berhasil menukar ${selectedItem.title}! Poin Anda berkurang sebanyak ${itemCost}.`);
                 handleCloseDialog();
             },
-            onError: (err) => {
+            onError: (err: any) => {
                 console.error("Error saat menukar:", err);
-                alert("Gagal menukar item. Silakan coba lagi.");
-                handleCloseDialog();
+                let errorMessage = "Gagal menukar item. Silakan coba lagi.";
+                if (err.message) {
+                    errorMessage = err.message;
+                } else if (err.errors) {
+                    const validationErrors = Object.values(err.errors).flat();
+                    if (validationErrors.length > 0) {
+                        errorMessage = validationErrors.join("\n");
+                    }
+                }
+                setErrorMessage(errorMessage);
             },
             preserveScroll: true,
         });
@@ -227,6 +237,9 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: any)
                         />
                         <p>Poin Anda saat ini: <span className="font-semibold">{currentTotalPoints}</span></p>
                         <p>Poin setelah penukaran: <span className="font-semibold">{currentTotalPoints - (selectedItem?.point || 0)}</span></p>
+                        {errorMessage && (
+                            <p className="text-red-500 text-sm">{errorMessage}</p>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={handleCloseDialog}>

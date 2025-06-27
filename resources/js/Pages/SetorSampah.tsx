@@ -54,7 +54,7 @@ import {
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 
-export default function SetorSampah({ auth, database }: PageProps) {
+export default function SetorSampah({ auth, database }: PageProps & { database: any[] }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         jenis_sampah: "",
         cabang: "",
@@ -64,6 +64,7 @@ export default function SetorSampah({ auth, database }: PageProps) {
     });
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const handleBeratSampahChange = (e: any) => {
         const berat = e.target.value;
@@ -88,6 +89,19 @@ export default function SetorSampah({ auth, database }: PageProps) {
             onSuccess: () => {
                 reset();
                 setIsDialogOpen(false);
+                setErrorMessage(""); // Reset error message on success
+            },
+            onError: (err: { message?: string; errors?: Record<string, string[]> }) => {
+                let errorMsg = "Gagal setor sampah. Silakan coba lagi.";
+                if (err.message) {
+                    errorMsg = err.message;
+                } else if (err.errors) {
+                    const validationErrors = Object.values(err.errors).flat();
+                    if (validationErrors.length > 0) {
+                        errorMsg = validationErrors.join("\n");
+                    }
+                }
+                setErrorMessage(errorMsg); // Tampilkan error di dialog, jangan tutup dialog
             },
         });
     };
@@ -189,14 +203,15 @@ export default function SetorSampah({ auth, database }: PageProps) {
                                                         className="col-span-7"
                                                         type="file"
                                                         onChange={(e) => {
-                                                            setData(
-                                                                (prevData) => ({
-                                                                    ...prevData,
-                                                                    foto_sampah:
-                                                                        e.target
-                                                                            .files[0],
-                                                                })
-                                                            );
+                                                            const files = e.target.files;
+                                                            if (files && files.length > 0) {
+                                                                setData(
+                                                                    (prevData) => ({
+                                                                        ...prevData,
+                                                                        foto_sampah: files[0],
+                                                                    })
+                                                                );
+                                                            }
                                                         }}
                                                         required
                                                     />
@@ -285,6 +300,9 @@ export default function SetorSampah({ auth, database }: PageProps) {
                                                         readOnly
                                                     />
                                                 </div>
+                                                {errorMessage && (
+                                                    <p className="text-red-500 text-sm col-span-8">{errorMessage}</p>
+                                                )}
                                                 <DialogFooter>
                                                     <Button
                                                         type="submit"
@@ -344,7 +362,7 @@ export default function SetorSampah({ auth, database }: PageProps) {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {database.map(
+                                                {(database as any[]).map(
                                                     (item: any, index: any) => (
                                                         <TableRow key={item.id}>
                                                             <TableCell className="hidden md:table-cell">
