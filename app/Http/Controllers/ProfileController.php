@@ -60,4 +60,13 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+
+    public function getTotalPoints(Request $request)
+    {
+        $user = $request->user();
+        $totalPoints = $user->laporSampahs()->sum('point'); // Asumsikan ada relasi 'reports' dengan kolom 'point'
+
+        return response()->json(['totalPoints' => $totalPoints]);
+    }
 }

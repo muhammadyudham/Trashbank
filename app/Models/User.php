@@ -44,4 +44,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function laporSampahs()
+    {
+        return $this->hasMany(LaporSampah::class);
+    }
+
+    public function setorSampahs()
+    {
+        return $this->hasMany(SetorSampah::class);
+    }
 }
