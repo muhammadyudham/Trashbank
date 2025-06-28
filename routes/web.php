@@ -32,12 +32,7 @@ Route::post('/setor-sampah/store', [SetorSampahController::class, 'store'])->mid
 
 Route::get('/insentif', function () {
     $userId = Auth::id();
-
-    $laporSampahPoints = LaporSampah::where('user_id', $userId)->sum('point');
-    $setorSampahPoints = SetorSampah::where('user_id', $userId)->sum('point');
-
-    $totalPoints = $laporSampahPoints + $setorSampahPoints;
-
+    $totalPoints = Auth::user()->total_points;
     return Inertia::render('Insentif', [
         'totalPoints' => $totalPoints
     ]);

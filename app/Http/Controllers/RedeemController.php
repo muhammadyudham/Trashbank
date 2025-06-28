@@ -60,12 +60,27 @@ class RedeemController extends Controller
         $itemName = $selectedItemBackend['title'];
 
         // 3. Cek Poin Pengguna
-        // Asumsi model User kamu punya kolom 'total_points'
+        // Debug log untuk pengecekan error 422
+        \Log::info('REDEEM DEBUG', [
+            'user_id' => $user->id,
+            'user_total_points' => $user->total_points,
+            'pointsToDeduct' => $pointsToDeduct,
+            'item_id' => $request->item_id,
+            'cardsData_ids' => collect($cardsData)->pluck('id')->all(),
+        ]);
         if ($user->total_points < $pointsToDeduct) {
+            if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Poin Anda tidak cukup untuk menukar item ini.',
+                    'total_points' => $user->total_points,
+                ], 422);
+            }
             return back()->withErrors(['message' => 'Poin Anda tidak cukup untuk menukar item ini.']);
         }
 
         // 4. Lakukan Pengurangan Poin (INI BAGIAN UTAMANYA!)
+        $user = \App\Models\User::find($user->id); // pastikan ambil user dari database
         $user->total_points -= $pointsToDeduct;
         $user->save(); // **PENTING: Menyimpan perubahan ke database**
 
@@ -82,6 +97,13 @@ class RedeemController extends Controller
         */
 
         // 6. Beri Respons Sukses dan Alihkan Kembali
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil menukar ' . $itemName . '!',
+                'total_points' => $user->total_points,
+            ]);
+        }
         return redirect()->back()->with('success', 'Berhasil menukar ' . $itemName . '!');
     }
 }

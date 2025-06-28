@@ -62,6 +62,11 @@ class LaporSampahController extends Controller
             'longitude' => $validatedData['longitude'],
         ]);
 
+        // Tambah point ke user
+        $user = \App\Models\User::find(Auth::id());
+        $user->total_points += $validatedData['point'];
+        $user->save();
+
         return redirect()->back()->with('success', 'Laporan berhasil ditambahkan!');
     }
 }

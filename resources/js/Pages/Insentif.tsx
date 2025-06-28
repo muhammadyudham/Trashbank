@@ -81,7 +81,7 @@ const cards = [
         id: 6,
         title: "Kecap 500 ml",
         point: 2,
-        url: "https://images.tokopedia.net/img/cache/500-square/VqbcmM/2022/3/8/dfbe5fab-11be-46fd-8422-de3151e35f85.jpg",
+        url: "https://images.tokopedia.net/img/cache/500-square/VqbcmM/2022/3/8/dfbe4fab-11be-46fd-8422-de3151e35f85.jpg",
     },
     {
         id: 7,
@@ -99,7 +99,7 @@ const cards = [
         id: 9,
         title: "Motor",
         point: 100,
-        url: "https://www.wahanahonda.com/assets/upload/produk/varian_warna/15/PRODUK_VARIAN-WARMA_15_04-02-2024_65be712821333.webp",
+        url: "https://www.wahanahonda.com/assets/upload/produk/varian_warna/15/PRODUK_VARIAN-WARNA_15_04-02-2024_65be712821333.webp",
     },
 ];
 
@@ -136,7 +136,7 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
     const handleOpenDialog = (item: CardItem) => {
         setSelectedItem(item);
         setIsDialogOpen(true);
-        // Penting: Set data form saat dialog dibuka
+        setErrorMessage(""); // Reset error saat dialog dibuka
         setData({
             item_id: item.id,
             points_cost: Number(item.point),
@@ -151,44 +151,51 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
         // reset(); // Jika Anda ingin mengosongkan form data sepenuhnya
     };
 
-    const handleRedeem = () => {
+    const handleRedeem = async () => {
         if (!selectedItem) {
             console.error("Tidak ada item yang dipilih untuk ditukar.");
             return;
         }
 
         const itemCost = Number(selectedItem.point);
+        let userPoints = Number(currentTotalPoints);
 
-        if (currentTotalPoints < itemCost) {
+        if (userPoints < itemCost) {
             setErrorMessage("Poin Anda tidak cukup untuk menukar item ini!");
             return;
         }
 
-        // PERBAIKAN PENTING DI SINI:
-        // Panggil `post` dengan HANYA URL dan objek OPSI.
-        // Data formulir (item_id, points_cost) sudah diatur melalui `setData` di `handleOpenDialog`.
-        post(route('redeem.item'), { // Argumen 1: URL
-            onSuccess: () => {
-                setCurrentTotalPoints((prevPoints) => prevPoints - itemCost);
-                setErrorMessage("");
-                alert(`Berhasil menukar ${selectedItem.title}! Poin Anda berkurang sebanyak ${itemCost}.`);
+        // Set processing state (optional, jika ingin disable button saat proses)
+        // setProcessing(true);
+
+        try {
+            const response = await fetch(route('redeem.item'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || ''
+                },
+                body: JSON.stringify({
+                    item_id: selectedItem.id,
+                    points_cost: selectedItem.point
+                })
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                setCurrentTotalPoints(data.total_points);
+                setErrorMessage('');
+                alert(`Berhasil menukar ${selectedItem?.title}! Poin Anda berkurang sebanyak ${selectedItem?.point}.`);
                 handleCloseDialog();
-            },
-            onError: (err: { message?: string; errors?: Record<string, string[]> }) => {
-                console.error("Error saat menukar:", err);
-                let errorMsg = "Gagal menukar item. Silakan coba lagi.";
-                if (err.message) {
-                    errorMsg = err.message;
-                } else if (err.errors) {
-                    const validationErrors = Object.values(err.errors).flat();
-                    if (validationErrors.length > 0) {
-                        errorMsg = validationErrors.join("\n");
-                    }
-                }
-                setErrorMessage(errorMsg);
-            },
-            preserveScroll: true,
-        }); // HANYA DUA ARGUMEN UNTUK post(): URL dan OPSI
+            } else {
+                setErrorMessage(data.message || 'Gagal menukar item. Silakan coba lagi.');
+            }
+        } catch (err) {
+            setErrorMessage('Gagal menukar item. Silakan coba lagi.');
+            console.error('Error saat menukar:', err);
+        } finally {
+            // setProcessing(false);
+        }
     };
 
     return (
@@ -221,14 +228,19 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
                                         alt={item.title}
                                         className="aspect-square object-cover w-full h-[300px]"
                                         src={item.url}
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = '/placeholder.png';
+                                        }}
                                     />
                                 </CardContent>
                                 <CardFooter>
                                     <Button
                                         className="w-full"
                                         onClick={() => handleOpenDialog(item)}
-                                        disabled={currentTotalPoints < item.point || processing}
+                                        disabled={Number(currentTotalPoints) < Number(item.point) || processing}
+                                        style={{ opacity: Number(currentTotalPoints) < Number(item.point) ? 0.5 : 1 }}
                                     >
+                                        <img src={item.url} alt="icon" style={{ width: 24, height: 24, marginRight: 8, borderRadius: 4, objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} />
                                         Tukar
                                     </Button>
                                 </CardFooter>
