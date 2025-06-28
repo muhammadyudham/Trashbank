@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\User; // Pastikan ini mengarah ke model User kamu
-// use App\Models\Item; // Jika kamu menyimpan item di database
-// use App\Models\Redemption; // Jika kamu ingin menyimpan riwayat penukaran
+use App\Models\Redemption; // Jika kamu ingin menyimpan riwayat penukaran
 
 class RedeemController extends Controller
 {
@@ -105,5 +104,31 @@ class RedeemController extends Controller
             ]);
         }
         return redirect()->back()->with('success', 'Berhasil menukar ' . $itemName . '!');
+    }
+
+    /**
+     * Menerima dan menyimpan alamat penerima hadiah ke tabel redemptions
+     */
+    public function saveAddress(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|integer',
+            'address' => 'required|string|max:255',
+        ]);
+
+        $user = $request->user();
+
+        // Simpan alamat ke tabel redemptions
+        $redemption = Redemption::create([
+            'user_id' => $user->id,
+            'item_id' => $request->item_id,
+            'address' => $request->address,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Alamat berhasil disimpan.',
+            'redemption' => $redemption,
+        ]);
     }
 }

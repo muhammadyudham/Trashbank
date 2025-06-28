@@ -29,31 +29,36 @@ export default function Authenticated({
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
                                     href={route("dashboard")}
-                                    active={route().current("dashboard")}
+                                    // active={route().current("dashboard")}
+                                    active={false}
                                 >
                                     Dashboard
                                 </NavLink>
                                 <NavLink
                                     href={route("lapor-sampah")}
-                                    active={route().current("lapor-sampah")}
+                                    // active={route().current("lapor-sampah")}
+                                    active={false}
                                 >
                                     Lapor Sampah
                                 </NavLink>
                                 <NavLink
                                     href={route("setor-sampah")}
-                                    active={route().current("setor-sampah")}
+                                    // active={route().current("setor-sampah")}
+                                    active={false}
                                 >
                                     Setor Sampah
                                 </NavLink>
                                 <NavLink
                                     href={route("insentif")}
-                                    active={route().current("insentif")}
+                                    // active={route().current("insentif")}
+                                    active={false}
                                 >
                                     Insentif
                                 </NavLink>
                                 <NavLink
                                     href={route("feedback")}
-                                    active={route().current("feedback")}
+                                    // active={route().current("feedback")}
+                                    active={false}
                                 >
                                     Feedback
                                 </NavLink>
@@ -157,31 +162,36 @@ export default function Authenticated({
                     <div className="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink
                             href={route("dashboard")}
-                            active={route().current("dashboard")}
+                            // active={route().current("dashboard")}
+                            active={false}
                         >
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route("lapor-sampah")}
-                            active={route().current("lapor-sampah")}
+                            // active={route().current("lapor-sampah")}
+                            active={false}
                         >
                             Lapor Sampah
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route("setor-sampah")}
-                            active={route().current("setor-sampah")}
+                            // active={route().current("setor-sampah")}
+                            active={false}
                         >
                             Setor Sampah
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route("insentif")}
-                            active={route().current("insentif")}
+                            // active={route().current("insentif")}
+                            active={false}
                         >
                             Insentif
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route("feedback")}
-                            active={route().current("feedback")}
+                            // active={route().current("feedback")}
+                            active={false}
                         >
                             Feedback
                         </ResponsiveNavLink>

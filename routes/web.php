@@ -38,6 +38,12 @@ Route::get('/insentif', function () {
     ]);
 })->middleware(['auth', 'verified'])->name('insentif');
 
+// --- Tambahkan Route ini untuk menyimpan alamat penukaran ---
+Route::post('/redeem-address', [RedeemController::class, 'saveAddress'])
+    ->middleware(['auth', 'verified'])
+    ->name('redeem.address');
+// -------------------------------------------------------------
+
 // --- Tambahkan Route ini untuk penukaran item ---
 Route::post('/redeem-item', [RedeemController::class, 'redeem'])
     ->middleware(['auth', 'verified'])

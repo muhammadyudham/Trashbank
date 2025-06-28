@@ -124,6 +124,9 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
     const [selectedItem, setSelectedItem] = useState<CardItem | null>(null);
     const [currentTotalPoints, setCurrentTotalPoints] = useState(initialTotalPoints);
     const [errorMessage, setErrorMessage] = useState("");
+    const [showAddressDialog, setShowAddressDialog] = useState(false);
+    const [address, setAddress] = useState("");
+    const [addressError, setAddressError] = useState("");
 
     // Inisialisasi useForm dengan data yang akan dikirim.
     // Jika ada properti yang tidak selalu ada, gunakan opsional (?)
@@ -165,9 +168,6 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
             return;
         }
 
-        // Set processing state (optional, jika ingin disable button saat proses)
-        // setProcessing(true);
-
         try {
             const response = await fetch(route('redeem.item'), {
                 method: 'POST',
@@ -185,16 +185,48 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
             if (response.ok && data.success) {
                 setCurrentTotalPoints(data.total_points);
                 setErrorMessage('');
-                alert(`Berhasil menukar ${selectedItem?.title}! Poin Anda berkurang sebanyak ${selectedItem?.point}.`);
-                handleCloseDialog();
+                setShowAddressDialog(true); // Tampilkan dialog alamat setelah sukses
+                // handleCloseDialog(); // Jangan tutup dialog utama dulu
             } else {
                 setErrorMessage(data.message || 'Gagal menukar item. Silakan coba lagi.');
             }
         } catch (err) {
             setErrorMessage('Gagal menukar item. Silakan coba lagi.');
             console.error('Error saat menukar:', err);
-        } finally {
-            // setProcessing(false);
+        }
+    };
+
+    const handleSubmitAddress = async () => {
+        if (!address.trim()) {
+            setAddressError("Alamat tidak boleh kosong!");
+            return;
+        }
+        setAddressError("");
+        try {
+            const response = await fetch(route('redeem.address'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || ''
+                },
+                body: JSON.stringify({
+                    item_id: selectedItem?.id,
+                    address: address
+                })
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                setShowAddressDialog(false);
+                handleCloseDialog();
+                alert("Alamat penerima hadiah berhasil disimpan: " + address);
+                setAddress("");
+            } else {
+                setAddressError(data.message || 'Gagal menyimpan alamat. Silakan coba lagi.');
+            }
+        } catch (err) {
+            setAddressError('Gagal menyimpan alamat. Silakan coba lagi.');
+            console.error('Error saat menyimpan alamat:', err);
         }
     };
 
@@ -278,6 +310,38 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
                         </Button>
                         <Button onClick={handleRedeem} disabled={processing}>
                             {processing ? 'Menukar...' : 'Tukar Sekarang'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Dialog untuk pengisian alamat penerima hadiah */}
+            <Dialog open={showAddressDialog} onOpenChange={setShowAddressDialog}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Alamat Penerima Hadiah</DialogTitle>
+                        <DialogDescription>
+                            Silakan isi alamat lengkap untuk pengiriman hadiah Anda.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <Label htmlFor="address">Alamat Lengkap</Label>
+                        <Input
+                            id="address"
+                            value={address}
+                            onChange={e => setAddress(e.target.value)}
+                            placeholder="Masukkan alamat lengkap penerima hadiah"
+                        />
+                        {addressError && (
+                            <p className="text-red-500 text-sm">{addressError}</p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowAddressDialog(false)}>
+                            Batal
+                        </Button>
+                        <Button onClick={handleSubmitAddress}>
+                            Simpan Alamat
                         </Button>
                     </DialogFooter>
                 </DialogContent>
