@@ -90,22 +90,23 @@ export default function Dashboard({ auth }: PageProps) {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 className="font-semibold text-xl text-green-900 leading-tight">
                     About Trashbank
                 </h2>
             }
         >
             <Head title="Dashboard" />
-
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <Card className="w-full">
-                        <CardHeader>
-                            <CardTitle>Tentang TrashBank</CardTitle>
+            <div className="py-6 min-h-screen bg-green-50">
+                <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                    <Card className="w-full bg-green-100 border-green-300 shadow-lg rounded-lg">
+                        <CardHeader className="bg-green-200 border-b border-green-300 rounded-t-lg p-4 sm:p-6">
+                            <CardTitle className="text-green-900 text-lg sm:text-xl">
+                                Tentang TrashBank
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <CardDescription>
-                                <p>
+                        <CardContent className="p-4 sm:p-6">
+                            <CardDescription className="text-green-800 text-sm sm:text-base">
+                                <div className="mb-2">
                                     TrashBank adalah layanan pemerintah yang
                                     bertujuan untuk membuat planet kita lebih
                                     hijau. Misi kami adalah mempromosikan
@@ -116,9 +117,8 @@ export default function Dashboard({ auth }: PageProps) {
                                     secara signifikan dan membuat dunia kita
                                     menjadi tempat yang lebih bersih dan sehat
                                     untuk ditinggali.
-                                </p>
-                                <br />
-                                <p>
+                                </div>
+                                <div className="mb-2">
                                     Layanan kami mencakup pengumpulan sampah,
                                     pemilahan, dan daur ulang, memastikan bahwa
                                     bahan-bahan sampah diproses dengan cara yang
@@ -126,18 +126,20 @@ export default function Dashboard({ auth }: PageProps) {
                                     edukasi dan sumber daya untuk membantu
                                     individu dan organisasi mengadopsi praktik
                                     pengelolaan sampah yang lebih baik.
-                                </p>
-                                <br />
-                                <p>
+                                </div>
+                                <div>
                                     Bergabunglah dengan kami dalam misi kami
                                     untuk menciptakan planet yang lebih hijau.
                                     Bersama-sama, kita bisa membuat perbedaan!
-                                </p>
+                                </div>
                             </CardDescription>
                         </CardContent>
                     </Card>
                 </div>
             </div>
+            <footer className="py-6 text-center text-xs sm:text-sm text-green-900 bg-green-200 border-t border-green-300 mt-8">
+                ©2025 TrashBank | All rights reserved.
+            </footer>
         </AuthenticatedLayout>
     );
 }

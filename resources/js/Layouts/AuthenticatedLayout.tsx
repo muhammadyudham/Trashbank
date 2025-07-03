@@ -3,7 +3,7 @@ import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { User } from "@/types";
 
 export default function Authenticated({
@@ -13,52 +13,54 @@ export default function Authenticated({
 }: PropsWithChildren<{ user: User; header?: ReactNode }>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+    const page = usePage();
+    const currentRoute = page.url.replace(/^\//, "") || "dashboard";
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="bg-white border-b border-gray-100">
+            <nav className="bg-green-700 border-b border-green-800 sticky top-0 z-50 shadow-md">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex">
                             <div className="shrink-0 flex items-center">
                                 <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                    <ApplicationLogo className="block h-9 w-auto fill-current text-green-100" />
                                 </Link>
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
                                     href={route("dashboard")}
-                                    // active={route().current("dashboard")}
-                                    active={false}
+                                    active={currentRoute === "dashboard"}
+                                    className="text-green-50 hover:text-green-200 font-bold drop-shadow"
                                 >
                                     Dashboard
                                 </NavLink>
                                 <NavLink
                                     href={route("lapor-sampah")}
-                                    // active={route().current("lapor-sampah")}
-                                    active={false}
+                                    active={currentRoute === "lapor-sampah"}
+                                    className="text-green-50 hover:text-green-200 font-bold drop-shadow"
                                 >
                                     Lapor Sampah
                                 </NavLink>
                                 <NavLink
                                     href={route("setor-sampah")}
-                                    // active={route().current("setor-sampah")}
-                                    active={false}
+                                    active={currentRoute === "setor-sampah"}
+                                    className="text-green-50 hover:text-green-200 font-bold drop-shadow"
                                 >
                                     Setor Sampah
                                 </NavLink>
                                 <NavLink
                                     href={route("insentif")}
-                                    // active={route().current("insentif")}
-                                    active={false}
+                                    active={currentRoute === "insentif"}
+                                    className="text-green-50 hover:text-green-200 font-bold drop-shadow"
                                 >
                                     Insentif
                                 </NavLink>
                                 <NavLink
                                     href={route("feedback")}
-                                    // active={route().current("feedback")}
-                                    active={false}
+                                    active={currentRoute === "feedback"}
+                                    className="text-green-50 hover:text-green-200 font-bold drop-shadow"
                                 >
                                     Feedback
                                 </NavLink>
@@ -162,36 +164,31 @@ export default function Authenticated({
                     <div className="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink
                             href={route("dashboard")}
-                            // active={route().current("dashboard")}
-                            active={false}
+                            active={currentRoute === "dashboard"}
                         >
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route("lapor-sampah")}
-                            // active={route().current("lapor-sampah")}
-                            active={false}
+                            active={currentRoute === "lapor-sampah"}
                         >
                             Lapor Sampah
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route("setor-sampah")}
-                            // active={route().current("setor-sampah")}
-                            active={false}
+                            active={currentRoute === "setor-sampah"}
                         >
                             Setor Sampah
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route("insentif")}
-                            // active={route().current("insentif")}
-                            active={false}
+                            active={currentRoute === "insentif"}
                         >
                             Insentif
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route("feedback")}
-                            // active={route().current("feedback")}
-                            active={false}
+                            active={currentRoute === "feedback"}
                         >
                             Feedback
                         </ResponsiveNavLink>

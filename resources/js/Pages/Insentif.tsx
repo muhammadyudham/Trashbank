@@ -183,10 +183,9 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
             });
             const data = await response.json();
             if (response.ok && data.success) {
-                setCurrentTotalPoints(data.total_points);
                 setErrorMessage('');
                 setShowAddressDialog(true); // Tampilkan dialog alamat setelah sukses
-                // handleCloseDialog(); // Jangan tutup dialog utama dulu
+                // Jangan update currentTotalPoints di sini!
             } else {
                 setErrorMessage(data.message || 'Gagal menukar item. Silakan coba lagi.');
             }
@@ -217,6 +216,7 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
             });
             const data = await response.json();
             if (response.ok && data.success) {
+                setCurrentTotalPoints(data.total_points); // Update poin user di sini!
                 setShowAddressDialog(false);
                 handleCloseDialog();
                 alert("Alamat penerima hadiah berhasil disimpan: " + address);
@@ -234,36 +234,38 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 className="font-semibold text-xl text-green-900 leading-tight">
                     Insentif
                 </h2>
             }
         >
             <Head title="Insentif" />
-
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 ">
+            <div className="py-6 min-h-screen bg-green-50">
+                <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
                     <h1 className=" text-xl font-bold mb-4">
                         Point Anda: {currentTotalPoints}
                     </h1>
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {cards.map((item: CardItem) => (
-                            <Card className="w-[380px]" key={item.id}>
+                            <Card className="w-full p-4 sm:p-6 rounded-lg shadow-md" key={item.id}>
                                 <CardHeader>
-                                    <CardTitle>{item.title}</CardTitle>
-                                    <CardDescription>
-                                        {item.point} Point
+                                    <CardTitle className="text-lg font-semibold">{item.title}</CardTitle>
+                                    <CardDescription className="text-sm text-gray-500">
+                                        <div>Lihat dan kelola insentif Anda di sini.</div>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="grid gap-4">
                                     <img
                                         alt={item.title}
-                                        className="aspect-square object-cover w-full h-[300px]"
+                                        className="aspect-square object-cover w-full h-[200px] sm:h-[250px]"
                                         src={item.url}
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = '/placeholder.png';
                                         }}
                                     />
+                                    <div className="text-green-800 font-bold text-center text-lg mt-2">
+                                        {item.point} Poin
+                                    </div>
                                 </CardContent>
                                 <CardFooter>
                                     <Button
@@ -346,6 +348,10 @@ export default function Insentif({ auth, totalPoints: initialTotalPoints }: Page
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <footer className="py-6 text-center text-xs sm:text-sm text-green-900 bg-green-200 border-t border-green-300 mt-8">
+                ©2025 TrashBank | All rights reserved.
+            </footer>
         </AuthenticatedLayout>
     );
 }

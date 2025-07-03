@@ -21,6 +21,7 @@ class User extends Authenticatable
         'email',
         'password',
         'total_points', // tambahkan agar mass assignment bisa
+        'role', // tambahkan agar mass assignment bisa
     ];
 
     /**

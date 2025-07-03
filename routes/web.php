@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\LaporSampahController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SetorSampahController;
@@ -15,8 +16,6 @@ Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
     ]);
 });
 
@@ -54,10 +53,26 @@ Route::get('/feedback', function () {
     return Inertia::render('Feedback');
 })->middleware(['auth', 'verified'])->name('feedback');
 
+// Route untuk submit feedback
+Route::post('/feedback', [FeedbackController::class, 'store'])->middleware(['auth', 'verified'])->name('feedback.store');
+
+// Route untuk API feedback (riwayat feedback user)
+Route::get('/api/feedback', [FeedbackController::class, 'index'])->middleware(['auth', 'verified']);
+// Route untuk API feedback semua user (admin/public)
+Route::get('/api/feedback/all', [FeedbackController::class, 'all'])->middleware(['auth', 'verified']);
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Route admin untuk edit & hapus Lapor Sampah
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::delete('/admin/lapor-sampah/{id}', [LaporSampahController::class, 'destroy']);
+    Route::put('/admin/lapor-sampah/{id}', [LaporSampahController::class, 'update']);
+    Route::delete('/admin/setor-sampah/{id}', [SetorSampahController::class, 'destroy']);
+    Route::put('/admin/setor-sampah/{id}', [SetorSampahController::class, 'update']);
 });
 
 require __DIR__.'/auth.php';

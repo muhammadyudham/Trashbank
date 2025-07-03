@@ -30,7 +30,11 @@ export default function Login({
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        post(route("login"));
+        post(route("login"), {
+            onSuccess: () => {
+                window.location.reload(); // Paksa reload setelah login sukses
+            },
+        });
     };
 
     return (

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { PageProps } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
@@ -54,7 +54,7 @@ import {
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 
-export default function SetorSampah({ auth, database }: PageProps & { database: any[] }) { // Tipe 'database' bisa lebih spesifik jika Anda tahu strukturnya
+export default function SetorSampah({ auth, database }: PageProps & { database: any[] }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         jenis_sampah: "",
         cabang: "",
@@ -67,6 +67,7 @@ export default function SetorSampah({ auth, database }: PageProps & { database: 
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [tableData, setTableData] = useState<any[]>(database);
 
     const handleBeratSampahChange = (e: React.ChangeEvent<HTMLInputElement>) => { // Perbaikan: Tipe event
         const berat = parseInt(e.target.value); // Pastikan ini dikonversi ke number
@@ -112,19 +113,19 @@ export default function SetorSampah({ auth, database }: PageProps & { database: 
             },
         });
     };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 className="font-semibold text-xl text-green-900 leading-tight">
                     Setor Sampah
                 </h2>
             }
         >
             <Head title="Setor Sampah" />
-
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="py-6 min-h-screen bg-green-50">
+                <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
                     <main className="grid flex-1 overflow-hidden items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
                         <Tabs defaultValue="semua">
                             <div className="flex items-center">
@@ -333,8 +334,7 @@ export default function SetorSampah({ auth, database }: PageProps & { database: 
                                     <CardHeader>
                                         <CardTitle>Setoran Sampah</CardTitle>
                                         <CardDescription>
-                                            Kelola setoran sampah Anda dan lihat
-                                            kinerjanya.
+                                          <div>Silakan setor sampah Anda di bawah ini.</div>
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -374,56 +374,21 @@ export default function SetorSampah({ auth, database }: PageProps & { database: 
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {(database as any[]).map( // Perbaikan: TS18046 (menggunakan 'any[]' di sini sebagai solusi cepat, idealnya buat interface untuk item database)
-                                                    (item: any, index: number) => ( // Perbaikan: Tipe 'index'
-                                                        <TableRow key={item.id}>
-                                                            <TableCell className="hidden md:table-cell">
-                                                                {index + 1}.
-                                                            </TableCell>
-                                                            <TableCell className="hidden md:table-cell">
-                                                                {item.nama}
-                                                            </TableCell>
-                                                            <TableCell className="hidden sm:table-cell">
-                                                                <img
-                                                                    alt="Product image"
-                                                                    className="aspect-square rounded-md object-cover"
-                                                                    height="64"
-                                                                    src={
-                                                                        item.foto_sampah ||
-                                                                        "/placeholder.svg"
-                                                                    }
-                                                                    width="64"
-                                                                />
-                                                            </TableCell>
-                                                            <TableCell className="font-medium">
-                                                                {
-                                                                    item.jenis_sampah
-                                                                }
-                                                            </TableCell>
-                                                            <TableCell className="hidden md:table-cell">
-                                                                {
-                                                                    item.berat_sampah
-                                                                }{" "}
-                                                                kg
-                                                            </TableCell>
-                                                            <TableCell className="hidden md:table-cell">
-                                                                Rp.{" "}
-                                                                {
-                                                                    item.total_harga
-                                                                }
-                                                            </TableCell>
-                                                            <TableCell className="hidden md:table-cell">
-                                                                {item.point}
-                                                            </TableCell>
-                                                            <TableCell className="hidden md:table-cell">
-                                                                {item.createdAt}
-                                                            </TableCell>
-                                                            <TableCell className="hidden md:table-cell">
-                                                                {item.cabang}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    )
-                                                )}
+                                                {tableData.map((item: any, index: number) => (
+                                                    <TableRow key={item.id}>
+                                                        <TableCell className="hidden md:table-cell">{index + 1}.</TableCell>
+                                                        <TableCell className="hidden md:table-cell">{item.nama}</TableCell>
+                                                        <TableCell className="hidden sm:table-cell">
+                                                            <img alt="Product image" className="aspect-square rounded-md object-cover" height="64" src={item.foto_sampah || "/placeholder.svg"} width="64" />
+                                                        </TableCell>
+                                                        <TableCell className="font-medium">{item.jenis_sampah}</TableCell>
+                                                        <TableCell className="hidden md:table-cell">{item.berat_sampah} kg</TableCell>
+                                                        <TableCell className="hidden md:table-cell">Rp. {item.total_harga}</TableCell>
+                                                        <TableCell className="hidden md:table-cell">{item.point}</TableCell>
+                                                        <TableCell className="hidden md:table-cell">{item.createdAt}</TableCell>
+                                                        <TableCell className="hidden md:table-cell">{item.cabang}</TableCell>
+                                                    </TableRow>
+                                                ))}
                                             </TableBody>
                                         </Table>
                                     </CardContent>
@@ -439,6 +404,9 @@ export default function SetorSampah({ auth, database }: PageProps & { database: 
                     </main>
                 </div>
             </div>
+            <footer className="py-6 text-center text-xs sm:text-sm text-green-900 bg-green-200 border-t border-green-300 mt-8">
+                ©2025 TrashBank | All rights reserved.
+            </footer>
         </AuthenticatedLayout>
     );
 }

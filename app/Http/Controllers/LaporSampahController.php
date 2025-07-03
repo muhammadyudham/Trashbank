@@ -69,4 +69,28 @@ class LaporSampahController extends Controller
 
         return redirect()->back()->with('success', 'Laporan berhasil ditambahkan!');
     }
+
+    // ADMIN: Hapus laporan
+    public function destroy($id)
+    {
+        $laporan = LaporSampah::findOrFail($id);
+        $laporan->delete();
+        return response()->json(['success' => true, 'message' => 'Laporan berhasil dihapus']);
+    }
+
+    // ADMIN: Edit laporan
+    public function update(Request $request, $id)
+    {
+        $laporan = LaporSampah::findOrFail($id);
+        $validatedData = $request->validate([
+            'jenis_sampah' => 'required|string',
+            'berat_sampah' => 'required|numeric',
+            'total_harga' => 'required|numeric',
+            'point' => 'required|numeric',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+        $laporan->update($validatedData);
+        return response()->json(['success' => true, 'message' => 'Laporan berhasil diupdate']);
+    }
 }

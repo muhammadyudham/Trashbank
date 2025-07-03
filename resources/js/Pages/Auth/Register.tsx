@@ -23,8 +23,11 @@ export default function Register() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
-        post(route("register"));
+        post(route("register"), {
+            onSuccess: () => {
+                window.location.href = route("login"); // Redirect ke halaman login setelah register sukses
+            },
+        });
     };
 
     return (
